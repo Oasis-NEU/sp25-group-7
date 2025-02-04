@@ -24,6 +24,9 @@ HEADERS = {
 }
 app = FastAPI()
 
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root():
+    return {"message": "FastAPI is running!"}
 
 @app.get("/bars/search/")
 def bars_by_search_city(city, limit = 20):
