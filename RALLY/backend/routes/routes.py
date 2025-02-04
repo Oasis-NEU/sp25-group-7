@@ -20,7 +20,7 @@ except ImportError:
 API_KEY = os.getenv("API_KEY")
 HEADERS = {
     "accept": "application/json",
-    "authorization": API_KEY
+    "Authorization": f"Bearer {API_KEY}"
 }
 app = FastAPI()
 
