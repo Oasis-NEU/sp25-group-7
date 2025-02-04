@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Query
-import sys 
-import os
 import requests
+import os
 
-desktop_path = os.path.expanduser("~/Desktop")  # For Mac/Linux
+"""desktop_path = os.path.expanduser("~/Desktop")  # For Mac/Linux
 
 
 if desktop_path not in sys.path:
@@ -15,7 +14,10 @@ try:
 except ImportError:
     API_KEY = "Missing API Key"
     print("⚠️ Warning: Could not load API Key from secrets.py. Ensure it exists on your Desktop!")
+"""
 
+
+API_KEY = os.getenv("API_KEY")
 HEADERS = {
     "accept": "application/json",
     "authorization": API_KEY
