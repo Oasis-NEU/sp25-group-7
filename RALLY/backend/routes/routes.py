@@ -2,20 +2,6 @@ from fastapi import FastAPI, Query
 import requests
 import os
 
-"""desktop_path = os.path.expanduser("~/Desktop")  # For Mac/Linux
-
-
-if desktop_path not in sys.path:
-    sys.path.append(desktop_path)
-
-try:
-    import my_secrets 
-    API_KEY = my_secrets.API_KEY
-except ImportError:
-    API_KEY = "Missing API Key"
-    print("⚠️ Warning: Could not load API Key from secrets.py. Ensure it exists on your Desktop!")
-"""
-
 
 API_KEY = os.getenv("API_KEY")
 HEADERS = {
@@ -30,6 +16,12 @@ async def root():
 
 @app.get("/bars/search/")
 def bars_by_search_city(city, limit = 20):
+    """
+    returns info of bars by specific search city 
+
+    :city: str, name of city, split space by %20 in hyperlink
+    :limit: int, limit number of search returns
+    """
     
     url = f"https://api.yelp.com/v3/businesses/search?location={city}&term=bar&sort_by=best_match&limit={limit}"
     response = requests.get(url, headers=HEADERS).json()
@@ -37,6 +29,13 @@ def bars_by_search_city(city, limit = 20):
 
 @app.get("/bars/location/")
 def bars_by_user_loc(lat, lon, limit = 20):
+    """
+    returns info of bars by user lat lon, can track live user loc
+
+    :lat: float, latitude position
+    :lon: float, longtitude position
+    :limit: int, limit number of search returns
+    """
 
     url = f"https://api.yelp.com/v3/businesses/search?latitude={lat}&longitude={lon}&sort_by=best_match&limit={limit}"
     response = requests.get(url, headers=HEADERS).json()
@@ -46,6 +45,11 @@ def bars_open_now():
     pass
 
 def get_info(response):
+    """
+    returns preliminary info, called in other routes about bars
+
+    :response: str, yelp API call link
+    """
     days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     info = []
 
@@ -90,14 +94,6 @@ def get_info(response):
 @app.get("/")
 def root():
     return {"message": "Yelp Bar Search API is Running!"} 
-"""
-def main():
-    resp = bars_by_search_city("Boston")
-    print(resp)
-if __name__ == "__main__":
-    main()
-"""
-
 
 ### run this
 #uvicorn routes:app --host 0.0.0.0 --port 8000 --reload
