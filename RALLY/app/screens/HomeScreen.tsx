@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, TextInput, Button } from "react-native";
+import { View, Text, ScrollView, Image, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import React, {useState} from 'react';
 
 export default function HomeScreen() {
@@ -7,19 +7,84 @@ export default function HomeScreen() {
     name: string;
   }
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    buttonContainer: {
+      margin: 20,
+    },
+    alternativeLayoutButtonContainer: {
+      margin: 20,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    bigBlue: {
+      color: 'blue',
+      fontWeight: 'bold',
+      fontSize: 30,
+    },
+    red: {
+      color: 'red',
+    },
+    button: {
+      paddingHorizontal: 8,
+      paddingVertical: 6,
+      borderRadius: 4,
+      backgroundColor: 'chartreuse',
+      borderWidth: 2,
+      borderColor: 'black',
+      alignSelf: 'flex-start',
+      marginHorizontal: '1%',
+      marginBottom: 6,
+      minWidth: '48%',
+      textAlign: 'center',
+    },
+    button2: {
+      paddingHorizontal: 8,
+      paddingVertical: 6,
+      borderRadius: 4,
+      backgroundColor: 'crimson',
+      borderWidth: 2,
+      borderColor: 'black',
+      alignSelf: 'flex-start',
+      marginHorizontal: '1%',
+      marginBottom: 6,
+      minWidth: '48%',
+      textAlign: 'center',
+    },
+  });
+  
+
   const Location = (info: LocationInfo) => {
     const [attending, setAttending] = useState(false);
+    const [count, setCount] = useState(0);
     return (
-      <View>
+      <View style={styles.container}>
         <Text>
-          {info.name} : {attending ? 'I AM GOING!' : 'Not Going'}
+          {info.name} : {attending ? 'I AM GOING!' : 'Not Going'}, Number of people Going: {count}
         </Text>
+        <View style={styles.button2}>
+        <Button
+        title = "Location Info"
+        color = "#0000000"
+        />
+        </View>
+        <View style={attending ? styles.button : styles.button2}>
         <Button
           onPress={() => {
             setAttending(!attending);
+            if (!attending) {
+              setCount(count + 1);
+            } else {
+              setCount(count - 1);
+            }
           }}
-          title={attending ? 'Click to Unattend' : 'Click to Attend'}
+          title = {attending ? 'Click to Unattend' : 'Click to Attend'}
+          color = "#000000"
         />
+        </View>
       </View>
     );
   };
@@ -27,31 +92,19 @@ export default function HomeScreen() {
   return (
     //Starts a scroll version of a view
     <ScrollView>
-      <View 
-        style={{ 
-          flex: 1, 
-          justifyContent: "center", 
-          alignItems: "center" 
-        }}>
-        <Text style={{ fontSize: 20 }}>Home Screen</Text>
-        <Location name = "Location 1"/>
-        <Location name = "Location 2"/>
-        <Text>Example image</Text>
-        <Image //Example of how to make an image
-          source={{
-            uri: 'https://reactnative.dev/docs/assets/p_cat2.png',
-          }}
-          style={{width: 200, height: 200}}
-        /> 
-      </View>
       <TextInput //Text box
         style={{
           height: 40,
           borderColor: 'gray',
           borderWidth: 1,
         }}
-        defaultValue="Type Box" // Start value 
+        defaultValue = "Find a Location" // Start value 
       />
+      <View>
+        <View style={{flex: 1, backgroundColor: 'powderblue'}} />
+        <Location name = "Location 1"/>
+        <Location name = "Location 2"/>
+      </View>
     </ScrollView>
   );
 }
