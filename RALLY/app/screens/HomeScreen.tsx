@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Image, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ImageBackground } from "react-native";
 import React, {useState} from 'react';
 
 export default function HomeScreen() {
@@ -6,31 +6,48 @@ export default function HomeScreen() {
   type LocationInfo = {
     name: string;
   }
-
+  
   const styles = StyleSheet.create({
     container: {
       flex: 1,
+      height: 200,
       justifyContent: 'center',
+      alignItems: 'center',  // Center content
+      padding: 10,
+      marginVertical: 10,  // Space between containers
     },
-    buttonContainer: {
-      margin: 20,
+    buttonRow: {
+      flexDirection: 'row',  // Place buttons side by side
+      justifyContent: 'space-evenly', 
+      width: '100%',  // Ensure they spread out
+      marginTop: 10,
     },
-    alternativeLayoutButtonContainer: {
-      margin: 20,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+    backgroundImage: {
+      flex: 1,
+      resizeMode: "cover",
+      justifyContent: "center",
+      width: '100%',
+      height: '100%',
+      position: 'absolute', // Make sure it covers the full area
     },
-    bigBlue: {
-      color: 'blue',
+    titleBar: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background for visibility
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      borderTopLeftRadius: 10, // Rounded corners to match container
+      borderBottomRightRadius: 10,
+    },
+    titleText: {
+      color: 'white',
       fontWeight: 'bold',
-      fontSize: 30,
+      fontSize: 16,
     },
-    red: {
-      color: 'red',
-    },
-    button: {
+    buttonGreen: {
       paddingHorizontal: 8,
-      paddingVertical: 6,
+      paddingVertical: 4,
       borderRadius: 4,
       backgroundColor: 'chartreuse',
       borderWidth: 2,
@@ -41,9 +58,9 @@ export default function HomeScreen() {
       minWidth: '48%',
       textAlign: 'center',
     },
-    button2: {
-      paddingHorizontal: 8,
-      paddingVertical: 6,
+    buttonRed: {
+      paddingHorizontal: 4,
+      paddingVertical: 4,
       borderRadius: 4,
       backgroundColor: 'crimson',
       borderWidth: 2,
@@ -61,33 +78,39 @@ export default function HomeScreen() {
     const [attending, setAttending] = useState(false);
     const [count, setCount] = useState(0);
     return (
-      <View style={styles.container}>
-        <Text>
-          {info.name} : {attending ? 'I AM GOING!' : 'Not Going'}, Number of people Going: {count}
-        </Text>
-        <View style={styles.button2}>
-        <Button
-        title = "Location Info"
-        color = "#0000000"
-        />
+      <ImageBackground 
+        source={require('../../assets/images/partyBackground.jpeg')} // Change this to your image URL
+        style={styles.container}
+        imageStyle={{ borderRadius: 10, opacity: 0.5 }} // Optional: Rounds corners of the image
+      >
+        <View style={styles.titleBar}>
+          <Text style={styles.titleText}>{info.name}</Text>
         </View>
-        <View style={attending ? styles.button : styles.button2}>
-        <Button
-          onPress={() => {
-            setAttending(!attending);
-            if (!attending) {
-              setCount(count + 1);
-            } else {
-              setCount(count - 1);
-            }
-          }}
-          title = {attending ? 'Click to Unattend' : 'Click to Attend'}
-          color = "#000000"
-        />
+    
+        <Text>{attending ? 'I AM GOING!' : 'Not Going'}, Number of people Going: {count}</Text>
+        
+        <View style={styles.buttonRow}>
+          <View style={styles.buttonRed}>
+            <Button
+              title="Location Info"
+              color="black"
+            />
+          </View>
+          <View style={attending ? styles.buttonGreen : styles.buttonRed}>
+            <Button
+              onPress={() => {
+                setAttending(!attending);
+                setCount(attending ? count - 1 : count + 1);
+              }}
+              title={attending ? 'Unattend' : 'Attend'}
+              color="black"
+            />
+          </View>
         </View>
-      </View>
+      </ImageBackground>
     );
   };
+  
 
   return (
     //Starts a scroll version of a view
@@ -101,7 +124,7 @@ export default function HomeScreen() {
         defaultValue = "Find a Location" // Start value 
       />
       <View>
-        <View style={{flex: 1, backgroundColor: 'powderblue'}} />
+        <View style={{flex: 1}} />
         <Location name = "Location 1"/>
         <Location name = "Location 2"/>
       </View>
