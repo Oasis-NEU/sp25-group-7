@@ -1,21 +1,19 @@
 import React, { useState, memo, useRef } from 'react';
-import { View, Text, ScrollView, ImageBackground, TextInput, Button, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import { View, Text, ScrollView, ImageBackground, TextInput, Button, StyleSheet, TouchableOpacity, Linking, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons'; // Import for ℹ️ info icon
 
 export default function HomeScreen() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [attendingCounts, setAttendingCounts] = useState<Record<string, number>>({});
-
-  // 🔹 Reference for ScrollView to enable auto-scrolling
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollView>(null); // Reference for auto-scroll
 
   // 🔹 List of locations with their own images & website links
   const locations = [
-    { name: "Two Saints", price: "$$$$", age: "21+", image: require('../../assets/images/TwoSaints.jpeg'), url: "https://www.twosaintsboston.com/" },
-    { name: "Venu Nightclub", price: "$$", age: "21+", image: require('../../assets/images/Venu.jpeg'), url: "https://www.venuboston.com/" },
+    { name: "Two Saints", price: "$$$$", age: "21+", image: require('../../assets/images/TwoSaints.jpeg'), url: "https://www.twosaintstavern.com/" },
+    { name: "Venu Nightclub", price: "$$", age: "21+", image: require('../../assets/images/Venu.jpeg'), url: "http://www.venuboston.com/" },
     { name: "Clerys", price: "$$", age: "21+", image: require('../../assets/images/Clerys.jpeg'), url: "https://www.clerysboston.com/" },
-    { name: "Bijou", price: "$", age: "18+", image: require('../../assets/images/Bijou.webp'), url: "https://www.bijouboston.com/" },
+    { name: "Bijou Nightclub", price: "$", age: "18+", image: require('../../assets/images/Bijou.webp'), url: "https://www.bijouboston.com/" },
   ];
 
   const handleToggleAttend = (name: string) => {
@@ -25,9 +23,7 @@ export default function HomeScreen() {
     }));
 
     setSelectedLocation(prev => (prev === name ? null : name)); // Toggle selection
-
-    // 🔹 Scroll to top when a new location is selected
-    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true }); // Auto-scroll to top
   };
 
   // 🔹 Filter locations based on search query
@@ -50,7 +46,7 @@ export default function HomeScreen() {
         placeholder="Search for a location..."
         placeholderTextColor="gray"
         value={searchQuery}
-        onChangeText={setSearchQuery} // Updates searchQuery state
+        onChangeText={setSearchQuery}
       />
       <View>
         {sortedLocations.length > 0 ? (
@@ -91,9 +87,16 @@ type LocationProps = {
 const Location = memo(({ name, price, age, image, url, attendingCount, selectedLocation, onToggleAttend }: LocationProps) => {
   const isSelected = selectedLocation === name;
 
-  // Function to open the bar's website
-  const openWebsite = () => {
-    Linking.openURL(url).catch((err) => console.error("Failed to open URL:", err));
+  // Function to confirm before opening the bar's website
+  const confirmAndOpenWebsite = () => {
+    Alert.alert(
+      "Open Website?",
+      "You are about to leave the app and open the bar's website in your browser. Do you want to continue?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Yes, Open", onPress: () => Linking.openURL(url).catch(err => console.error("Failed to open URL:", err)) }
+      ]
+    );
   };
 
   return (
@@ -106,7 +109,7 @@ const Location = memo(({ name, price, age, image, url, attendingCount, selectedL
       <View style={styles.titleContainer}>
         <View style={styles.titleBar}>
           <Text style={styles.titleText}>{name}</Text>
-          <TouchableOpacity onPress={openWebsite} style={styles.infoButton}>
+          <TouchableOpacity onPress={confirmAndOpenWebsite} style={styles.infoButton}>
             <Ionicons name="information-circle-outline" size={18} color="white" />
           </TouchableOpacity>
         </View>
@@ -192,8 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'yellow',
     paddingVertical: 5,
     paddingHorizontal: 10,
-    borderBottomRightRadius: 5,
-    borderBottomLeftRadius: 5,
+    borderRadius: 5,
     marginLeft: 8,
   },
   priceTag: {
@@ -235,5 +237,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 16,
-  },
+  },  
 });
