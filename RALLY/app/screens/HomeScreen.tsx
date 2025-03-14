@@ -1,22 +1,29 @@
 import React, { useState, memo, useRef } from 'react';
-import { View, Text, ScrollView, ImageBackground, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, ScrollView, ImageBackground, TextInput, Button, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import { Ionicons } from '@expo/vector-icons'; // Import for ℹ️ info icon
 
 export default function HomeScreen() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [attendingCounts, setAttendingCounts] = useState<Record<string, number>>({});
 
   // 🔹 Reference for ScrollView to enable auto-scrolling
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // 🔹 List of locations with their own images
+  // 🔹 List of locations with their own images & website links
   const locations = [
-    { name: "Two Saints", price: "$$$$", age: "21+", image: require('../../assets/images/TwoSaints.jpeg') },
-    { name: "Venu Nightclub", price: "$$", age: "21+", image: require('../../assets/images/Venu.jpeg') },
-    { name: "Clerys", price: "$$", age: "21+", image: require('../../assets/images/Clerys.jpeg') },
-    { name: "Bijou", price: "$", age: "18+", image: require('../../assets/images/Bijou.webp') },
+    { name: "Two Saints", price: "$$$$", age: "21+", image: require('../../assets/images/TwoSaints.jpeg'), url: "https://www.twosaintsboston.com/" },
+    { name: "Venu Nightclub", price: "$$", age: "21+", image: require('../../assets/images/Venu.jpeg'), url: "https://www.venuboston.com/" },
+    { name: "Clerys", price: "$$", age: "21+", image: require('../../assets/images/Clerys.jpeg'), url: "https://www.clerysboston.com/" },
+    { name: "Bijou", price: "$", age: "18+", image: require('../../assets/images/Bijou.webp'), url: "https://www.bijouboston.com/" },
   ];
 
-  const handleSelect = (name: string) => {
+  const handleToggleAttend = (name: string) => {
+    setAttendingCounts(prevCounts => ({
+      ...prevCounts,
+      [name]: selectedLocation === name ? Math.max(0, prevCounts[name] - 1) : (prevCounts[name] || 0) + 1, // Increase or decrease count properly
+    }));
+
     setSelectedLocation(prev => (prev === name ? null : name)); // Toggle selection
 
     // 🔹 Scroll to top when a new location is selected
@@ -47,15 +54,17 @@ export default function HomeScreen() {
       />
       <View>
         {sortedLocations.length > 0 ? (
-          sortedLocations.map(({ name, price, age, image }) => (
+          sortedLocations.map(({ name, price, age, image, url }) => (
             <Location 
               key={name} 
               name={name} 
               price={price} 
               age={age} 
               image={image} 
+              url={url} 
+              attendingCount={attendingCounts[name] || 0} 
               selectedLocation={selectedLocation} 
-              onSelect={handleSelect} 
+              onToggleAttend={handleToggleAttend} 
             />
           ))
         ) : (
@@ -72,17 +81,24 @@ type LocationProps = {
   price: string;
   age: string;
   image: any;
+  url: string;
+  attendingCount: number;
   selectedLocation: string | null;
-  onSelect: (name: string) => void;
+  onToggleAttend: (name: string) => void;
 };
 
 // ✅ Memoized Location Component to prevent unnecessary re-renders
-const Location = memo(({ name, price, age, image, selectedLocation, onSelect }: LocationProps) => {
+const Location = memo(({ name, price, age, image, url, attendingCount, selectedLocation, onToggleAttend }: LocationProps) => {
   const isSelected = selectedLocation === name;
+
+  // Function to open the bar's website
+  const openWebsite = () => {
+    Linking.openURL(url).catch((err) => console.error("Failed to open URL:", err));
+  };
 
   return (
     <ImageBackground 
-      source={image}  // 🔹 Unique image for each location
+      source={image}  
       style={styles.container}
       imageStyle={{ borderRadius: 10, opacity: 0.5 }}
     >
@@ -90,30 +106,33 @@ const Location = memo(({ name, price, age, image, selectedLocation, onSelect }: 
       <View style={styles.titleContainer}>
         <View style={styles.titleBar}>
           <Text style={styles.titleText}>{name}</Text>
+          <TouchableOpacity onPress={openWebsite} style={styles.infoButton}>
+            <Ionicons name="information-circle-outline" size={18} color="white" />
+          </TouchableOpacity>
         </View>
         <View style={styles.ageTag}>
-          <Text style={styles.ageText}>{age}</Text>
+          <Text>{age}</Text>
         </View>
       </View>
 
       {/* 🔹 Price Tag (Top Right) */}
       <View style={styles.priceTag}>
-        <Text style={styles.priceText}>{price}</Text>
+        <Text>{price}</Text>
       </View>
 
-      <Text>Number of people Going: {isSelected ? 1 : 0}</Text>
-      
-      <View style={styles.buttonRow}>
-        <View style={styles.buttonRed}>
-          <Button title="Location Info" color="black" />
-        </View>
-        <View style={isSelected ? styles.buttonGreen : styles.buttonRed}>
-          <Button
-            onPress={() => onSelect(name)}
-            title={isSelected ? 'I AM GOING!' : 'Click to Go'}
-            color="black"
-          />
-        </View>
+      {/* 🔹 Number of People Going (Centered) */}
+      <View style={styles.peopleGoingContainer}>
+        <Text>Number of People Going: {attendingCount}</Text>
+      </View>
+
+      {/* 🔹 Click to Go Button */}
+      <View style={styles.buttonWrapper}>
+        <TouchableOpacity
+          onPress={() => onToggleAttend(name)}
+          style={isSelected ? styles.buttonGreen : styles.buttonRed}
+        >
+          <Text style={styles.buttonText}>{isSelected ? 'I AM GOING!' : 'Click to Go'}</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -138,25 +157,18 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    height: 200,
+    height: 250,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
     marginVertical: 10,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    width: '100%',
-    marginTop: 10,
-  },
-  // 🔹 Title & Age container
   titleContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
-    flexDirection: 'row', // Aligns title and age horizontally
-    alignItems: 'center', // Centers them vertically
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   titleBar: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -164,24 +176,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderTopLeftRadius: 10,
     borderBottomRightRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   titleText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+    marginRight: 6,
+  },
+  infoButton: {
+    paddingHorizontal: 5,
   },
   ageTag: {
     backgroundColor: 'yellow',
     paddingVertical: 5,
     paddingHorizontal: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
     marginLeft: 8,
-  },
-  ageText: {
-    color: 'black',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
   priceTag: {
     position: 'absolute',
@@ -193,35 +206,34 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  priceText: {
-    color: 'black',
-    fontWeight: 'bold',
-    fontSize: 14,
+  peopleGoingContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 40,
+  },
+  buttonWrapper: {
+    marginTop: 20,
   },
   buttonGreen: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 8,
     backgroundColor: 'chartreuse',
     borderWidth: 2,
     borderColor: 'black',
-    alignSelf: 'flex-start',
-    marginHorizontal: '1%',
-    marginBottom: 6,
-    minWidth: '48%',
-    textAlign: 'center',
   },
   buttonRed: {
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 8,
     backgroundColor: 'crimson',
     borderWidth: 2,
     borderColor: 'black',
-    alignSelf: 'flex-start',
-    marginHorizontal: '1%',
-    marginBottom: 6,
-    minWidth: '48%',
+  },
+  buttonText: {
+    color: 'black',
+    fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 16,
   },
 });
