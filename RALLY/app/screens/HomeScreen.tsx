@@ -5,12 +5,12 @@ export default function HomeScreen() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // 🔹 List of locations (add as many as you want)
+  // 🔹 List of locations with prices and age restrictions
   const locations = [
-    "Two Saints (OHE)", 
-    "Venu Nightclub", 
-    "Bijou", 
-    "Clerys", 
+    { name: "Two Saints", price: "$$$$", age: "21+" },
+    { name: "Venu Nightclub", price: "$$", age: "21+" },
+    { name: "Clerys", price: "$$", age: "21+" },
+    { name: "Bijou", price: "$", age: "18+" },
   ];
 
   const handleSelect = (name: string) => {
@@ -19,13 +19,13 @@ export default function HomeScreen() {
 
   // 🔹 Filter locations based on search query
   const filteredLocations = locations.filter(location =>
-    location.toLowerCase().includes(searchQuery.toLowerCase())
+    location.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // ✅ Sort locations: selected location always on top
   const sortedLocations = [...filteredLocations].sort((a, b) => {
-    if (a === selectedLocation) return -1;
-    if (b === selectedLocation) return 1;
+    if (a.name === selectedLocation) return -1;
+    if (b.name === selectedLocation) return 1;
     return 0;
   });
 
@@ -41,8 +41,8 @@ export default function HomeScreen() {
       />
       <View>
         {sortedLocations.length > 0 ? (
-          sortedLocations.map((name) => (
-            <Location key={name} name={name} selectedLocation={selectedLocation} onSelect={handleSelect} />
+          sortedLocations.map(({ name, price, age }) => (
+            <Location key={name} name={name} price={price} age={age} selectedLocation={selectedLocation} onSelect={handleSelect} />
           ))
         ) : (
           <Text style={styles.noResultsText}>No locations found</Text>
@@ -55,12 +55,14 @@ export default function HomeScreen() {
 // ✅ Type definition for props
 type LocationProps = {
   name: string;
+  price: string;
+  age: string;
   selectedLocation: string | null;
   onSelect: (name: string) => void;
 };
 
 // ✅ Memoized Location Component to prevent unnecessary re-renders
-const Location = memo(({ name, selectedLocation, onSelect }: LocationProps) => {
+const Location = memo(({ name, price, age, selectedLocation, onSelect }: LocationProps) => {
   const isSelected = selectedLocation === name;
 
   return (
@@ -69,8 +71,19 @@ const Location = memo(({ name, selectedLocation, onSelect }: LocationProps) => {
       style={styles.container}
       imageStyle={{ borderRadius: 10, opacity: 0.5 }}
     >
-      <View style={styles.titleBar}>
-        <Text style={styles.titleText}>{name}</Text>
+      {/* 🔹 Title & Age Tag (Aligned in a Row) */}
+      <View style={styles.titleContainer}>
+        <View style={styles.titleBar}>
+          <Text style={styles.titleText}>{name}</Text>
+        </View>
+        <View style={styles.ageTag}>
+          <Text style={styles.ageText}>{age}</Text>
+        </View>
+      </View>
+
+      {/* 🔹 Price Tag (Top Right) */}
+      <View style={styles.priceTag}>
+        <Text style={styles.priceText}>{price}</Text>
       </View>
 
       <Text>Number of people Going: {isSelected ? 1 : 0}</Text>
@@ -122,10 +135,15 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 10,
   },
-  titleBar: {
+  // 🔹 Title & Age container
+  titleContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
+    flexDirection: 'row', // Aligns title and age horizontally
+    alignItems: 'center', // Centers them vertically
+  },
+  titleBar: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     paddingVertical: 5,
     paddingHorizontal: 15,
@@ -136,6 +154,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  ageTag: {
+    backgroundColor: 'yellow',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    marginLeft: 8, // Spacing between title and age
+  },
+  ageText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  priceTag: {
+    position: 'absolute',
+    top: 0,
+    right: 5,
+    backgroundColor: 'lawngreen',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  priceText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   buttonGreen: {
     paddingHorizontal: 8,
