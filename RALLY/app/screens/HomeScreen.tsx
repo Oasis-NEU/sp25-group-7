@@ -1,20 +1,26 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useRef } from 'react';
 import { View, Text, ScrollView, ImageBackground, TextInput, Button, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // 🔹 List of locations with prices and age restrictions
+  // 🔹 Reference for ScrollView to enable auto-scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // 🔹 List of locations with their own images
   const locations = [
-    { name: "Two Saints", price: "$$$$", age: "21+" },
-    { name: "Venu Nightclub", price: "$$", age: "21+" },
-    { name: "Clerys", price: "$$", age: "21+" },
-    { name: "Bijou", price: "$", age: "18+" },
+    { name: "Two Saints", price: "$$$$", age: "21+", image: require('../../assets/images/TwoSaints.jpeg') },
+    { name: "Venu Nightclub", price: "$$", age: "21+", image: require('../../assets/images/Venu.jpeg') },
+    { name: "Clerys", price: "$$", age: "21+", image: require('../../assets/images/Clerys.jpeg') },
+    { name: "Bijou", price: "$", age: "18+", image: require('../../assets/images/Bijou.webp') },
   ];
 
   const handleSelect = (name: string) => {
     setSelectedLocation(prev => (prev === name ? null : name)); // Toggle selection
+
+    // 🔹 Scroll to top when a new location is selected
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   // 🔹 Filter locations based on search query
@@ -30,7 +36,7 @@ export default function HomeScreen() {
   });
 
   return (
-    <ScrollView>
+    <ScrollView ref={scrollViewRef}>
       {/* 🔹 Search Bar */}
       <TextInput 
         style={styles.searchBar}
@@ -41,8 +47,16 @@ export default function HomeScreen() {
       />
       <View>
         {sortedLocations.length > 0 ? (
-          sortedLocations.map(({ name, price, age }) => (
-            <Location key={name} name={name} price={price} age={age} selectedLocation={selectedLocation} onSelect={handleSelect} />
+          sortedLocations.map(({ name, price, age, image }) => (
+            <Location 
+              key={name} 
+              name={name} 
+              price={price} 
+              age={age} 
+              image={image} 
+              selectedLocation={selectedLocation} 
+              onSelect={handleSelect} 
+            />
           ))
         ) : (
           <Text style={styles.noResultsText}>No locations found</Text>
@@ -57,17 +71,18 @@ type LocationProps = {
   name: string;
   price: string;
   age: string;
+  image: any;
   selectedLocation: string | null;
   onSelect: (name: string) => void;
 };
 
 // ✅ Memoized Location Component to prevent unnecessary re-renders
-const Location = memo(({ name, price, age, selectedLocation, onSelect }: LocationProps) => {
+const Location = memo(({ name, price, age, image, selectedLocation, onSelect }: LocationProps) => {
   const isSelected = selectedLocation === name;
 
   return (
     <ImageBackground 
-      source={require('../../assets/images/partyBackground.jpeg')}
+      source={image}  // 🔹 Unique image for each location
       style={styles.container}
       imageStyle={{ borderRadius: 10, opacity: 0.5 }}
     >
@@ -161,7 +176,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
-    marginLeft: 8, // Spacing between title and age
+    marginLeft: 8,
   },
   ageText: {
     color: 'black',
